@@ -1,0 +1,56 @@
+[
+  {
+    "id": "v001",
+    "title": "新手深蹲完整教学",
+    "category": "腿部",
+    "duration": "5:30",
+    "difficulty": "入门",
+    "cover_url": "",
+    "subtitle_file": "v001_squat.txt"
+  },
+  {
+    "id": "v002",
+    "title": "俯卧撑从零开始",
+    "category": "胸部",
+    "duration": "4:20",
+    "difficulty": "入门",
+    "cover_url": "",
+    "subtitle_file": "v002_pushup.txt"
+  },
+  {
+    "id": "v003",
+    "title": "背部训练三个黄金动作",
+    "category": "背部",
+    "duration": "6:15",
+    "difficulty": "进阶",
+    "cover_url": "",
+    "subtitle_file": "v003_back.txt"
+  },
+  {
+    "id": "v004",
+    "title": "10分钟核心燃脂训练",
+    "category": "核心",
+    "duration": "10:00",
+    "difficulty": "进阶",
+    "cover_url": "",
+    "subtitle_file": "v004_core.txt"
+  },
+  {
+    "id": "v005",
+    "title": "全身HIIT燃脂20分钟",
+    "category": "全身",
+    "duration": "20:00",
+    "difficulty": "高阶",
+    "cover_url": "",
+    "subtitle_file": "v005_hiit.txt"
+  },
+  {
+    "id": "v006",
+    "title": "肩部三角肌全面训练",
+    "category": "肩部",
+    "duration": "7:40",
+    "difficulty": "进阶",
+    "cover_url": "",
+    "subtitle_file": "v006_shoulder.txt"
+  }
+]

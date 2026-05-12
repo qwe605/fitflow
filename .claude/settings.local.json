@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python *)",
+      "PowerShell(pip install *)",
+      "PowerShell(python -c \"import fitz; doc = fitz.open\\(r'C:\\\\Users\\\\mj\\\\Desktop\\\\heckson\\\\抖音黑客松联赛-武汉站终极指南.pdf'\\); text = ''; [text := text + doc[i].get_text\\(\\) + '\\\\n---PAGE---\\\\n' for i in range\\(len\\(doc\\)\\)]; print\\(text[:20000]\\)\")",
+      "PowerShell(New-Item *)"
+    ]
+  }
+}
