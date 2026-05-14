@@ -20,9 +20,9 @@ class VideoInfo(BaseModel):
 class Exercise(BaseModel):
     name: str
     target_muscle: str
-    sets: int
-    reps: int
-    rest_seconds: int
+    sets: int | str
+    reps: int | str
+    rest_seconds: int | str
     key_points: list[str]
     common_mistakes: list[str]
     breathing: str

@@ -1,3 +1,4 @@
+import json
 import re
 import httpx
 
@@ -29,6 +30,26 @@ async def resolve_short_url(url: str) -> str:
         return str(resp.url)
 
 
+def extract_video_url(html: str) -> str | None:
+    """从抖音页面 HTML 中提取视频播放地址"""
+    patterns = [
+        r'"play_addr"\s*:\s*\{[^}]*"url_list"\s*:\s*\["([^"]+)"',
+        r'"playAddr"\s*:\s*"([^"]+)"',
+        r'"play_addr_h264"\s*:\s*\{[^}]*"url_list"\s*:\s*\["([^"]+)"',
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, html, re.DOTALL)
+        if match:
+            raw_url = match.group(1)
+            try:
+                decoded = json.loads(f'"{raw_url}"')
+            except (json.JSONDecodeError, ValueError):
+                decoded = raw_url
+            if decoded.startswith("http"):
+                return decoded
+    return None
+
+
 async def fetch_video_info(url: str) -> dict:
     """从抖音视频页面提取视频信息"""
     async with httpx.AsyncClient(timeout=10) as client:
@@ -54,6 +75,7 @@ async def fetch_video_info(url: str) -> dict:
         if desc_match:
             desc = desc_match.group(1)
 
+    video_url = extract_video_url(html)
     content = f"{title}\n{desc}" if desc else title
 
     return {
@@ -61,4 +83,5 @@ async def fetch_video_info(url: str) -> dict:
         "description": desc,
         "subtitle_text": content,
         "source_url": url,
+        "video_url": video_url,
     }
