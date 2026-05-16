@@ -1,5 +1,8 @@
 import json
+from collections.abc import Generator
+
 from openai import OpenAI
+
 from config import ARK_API_KEY, ARK_MODEL_ID, ARK_BASE_URL
 
 client = OpenAI(api_key=ARK_API_KEY, base_url=ARK_BASE_URL)
@@ -66,12 +69,38 @@ def generate_workout_plan(subtitle_text: str, user_level: str, goal: str = "") -
             {"role": "user", "content": user_message},
         ],
         temperature=0.3,
+        max_tokens=2000,
     )
 
     content = response.choices[0].message.content.strip()
     if content.startswith("```"):
         content = content.split("\n", 1)[1].rsplit("```", 1)[0]
     return json.loads(content)
+
+
+def generate_workout_plan_stream(subtitle_text: str, user_level: str, goal: str = "") -> Generator[str, None, None]:
+    user_message = f"""视频字幕内容：
+{subtitle_text}
+
+用户体能水平：{user_level}
+"""
+    if goal:
+        user_message += f"训练目标：{goal}\n"
+
+    stream = client.chat.completions.create(
+        model=ARK_MODEL_ID,
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT_GENERATE},
+            {"role": "user", "content": user_message},
+        ],
+        temperature=0.3,
+        stream=True,
+        max_tokens=2000,
+    )
+    for chunk in stream:
+        delta = chunk.choices[0].delta.content
+        if delta:
+            yield delta
 
 
 def chat_about_exercise(
