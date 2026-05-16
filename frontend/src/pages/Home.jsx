@@ -1,16 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchVideos, parseDouyinUrl } from '../api';
+import { fetchVideos, parseDouyinUrlStream } from '../api';
 import { getHistory } from '../storage';
 import VideoCard from '../components/VideoCard';
 
 const CATEGORIES = ['全部', '腿部', '胸部', '背部', '核心', '肩部', '全身'];
+
+const STEP_LABELS = {
+  resolving: '正在解析链接...',
+  fetching: '正在获取视频信息...',
+  downloading: '正在下载视频...',
+  extracting: '正在提取关键帧...',
+  analyzing: 'AI 正在分析动作...',
+};
 
 export default function Home() {
   const [videos, setVideos] = useState([]);
   const [activeCategory, setActiveCategory] = useState('全部');
   const [linkInput, setLinkInput] = useState('');
   const [parsing, setParsing] = useState(false);
+  const [parseStep, setParseStep] = useState('');
+  const [parsePartial, setParsePartial] = useState('');
   const [parseError, setParseError] = useState('');
   const [history, setHistory] = useState([]);
   const navigate = useNavigate();
@@ -28,15 +38,36 @@ export default function Home() {
     if (!linkInput.trim()) return;
     setParsing(true);
     setParseError('');
+    setParseStep('');
+    setParsePartial('');
+
     try {
-      const result = await parseDouyinUrl(linkInput.trim());
-      navigate('/generate/custom', {
-        state: { subtitleText: result.subtitle_text, title: result.title },
+      let result = null;
+      await parseDouyinUrlStream(linkInput.trim(), (event) => {
+        if (event.step === 'error') {
+          setParseError(event.message);
+        } else if (event.step === 'done') {
+          result = event.data;
+        } else if (event.step === 'analyzing' && event.partial) {
+          setParsePartial(prev => prev + event.partial);
+        } else {
+          setParseStep(STEP_LABELS[event.step] || event.message || '');
+        }
       });
+
+      if (result) {
+        navigate('/generate/custom', {
+          state: { subtitleText: result.subtitle_text, title: result.title },
+        });
+      } else if (!parseError) {
+        setParseError('解析失败，请检查链接');
+      }
     } catch (e) {
       setParseError(e.message || '解析失败，请检查链接');
     } finally {
       setParsing(false);
+      setParseStep('');
+      setParsePartial('');
     }
   };
 
@@ -66,6 +97,22 @@ export default function Home() {
             {parsing ? '解析中...' : '解析'}
           </button>
         </div>
+        {parsing && parseStep && (
+          <div className="mt-2">
+            <p className="text-xs text-blue-600 flex items-center gap-1">
+              <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              {parseStep}
+            </p>
+            {parsePartial && (
+              <p className="text-xs text-gray-500 mt-1 max-h-20 overflow-y-auto whitespace-pre-wrap">
+                {parsePartial.slice(-200)}
+              </p>
+            )}
+          </div>
+        )}
         {parseError && <p className="text-red-500 text-xs mt-2">{parseError}</p>}
         <p className="text-xs text-gray-400 mt-2">支持抖音分享链接、短链接或复制的口令</p>
       </div>

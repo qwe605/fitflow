@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { generateWorkout } from '../api';
+import { generateWorkoutStream } from '../api';
 
 const LEVELS = [
   { value: 'beginner', label: '入门', desc: '刚开始健身' },
@@ -14,6 +14,7 @@ export default function Generate() {
   const navigate = useNavigate();
   const [level, setLevel] = useState('intermediate');
   const [loading, setLoading] = useState(false);
+  const [streamText, setStreamText] = useState('');
   const [plan, setPlan] = useState(null);
   const [error, setError] = useState('');
 
@@ -24,18 +25,26 @@ export default function Generate() {
   const handleGenerate = async () => {
     setLoading(true);
     setError('');
+    setStreamText('');
+    setPlan(null);
+
     try {
       const params = isCustom
         ? { subtitleText: customSubtitle, userLevel: level }
         : { videoId, userLevel: level };
-      const res = await generateWorkout(params);
-      if (res.success) {
-        setPlan(res.plan);
-      } else {
-        setError(res.error || '生成失败，请重试');
-      }
+
+      await generateWorkoutStream(params, (event) => {
+        if (event.step === 'generating' && event.partial) {
+          setStreamText(prev => prev + event.partial);
+        } else if (event.step === 'done' && event.data?.success) {
+          setPlan(event.data.plan);
+          setStreamText('');
+        } else if (event.step === 'error') {
+          setError(event.message || '生成失败，请重试');
+        }
+      });
     } catch (e) {
-      setError('网络错误，请检查连接');
+      setError(e.message || '网络错误，请检查连接');
     } finally {
       setLoading(false);
     }
@@ -94,6 +103,13 @@ export default function Generate() {
               </span>
             ) : '生成训练计划'}
           </button>
+
+          {loading && streamText && (
+            <div className="mt-4 bg-gray-50 rounded-xl p-3 max-h-48 overflow-y-auto">
+              <p className="text-xs text-gray-400 mb-1">实时生成中...</p>
+              <pre className="text-xs text-gray-600 whitespace-pre-wrap font-mono">{streamText}</pre>
+            </div>
+          )}
 
           {error && <p className="text-red-500 text-sm mt-3 text-center">{error}</p>}
         </>

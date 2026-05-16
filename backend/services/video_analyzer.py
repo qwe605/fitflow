@@ -1,8 +1,9 @@
 import base64
-import subprocess
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
 
+import cv2
 import httpx
 from openai import OpenAI
 
@@ -20,50 +21,67 @@ VISION_PROMPT = (
 )
 
 
-async def download_video(video_url: str) -> Path:
-    """下载视频到临时文件"""
-    async with httpx.AsyncClient(timeout=60, follow_redirects=True) as client:
-        resp = await client.get(video_url, headers={
+async def download_video(video_url: str, on_progress=None) -> Path:
+    """流式下载视频到临时文件，支持进度回调"""
+    tmp = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
+    async with httpx.AsyncClient(timeout=120, follow_redirects=True) as client:
+        async with client.stream("GET", video_url, headers={
             "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15",
             "Referer": "https://www.douyin.com/",
-        })
-        resp.raise_for_status()
-
-    tmp = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
-    tmp.write(resp.content)
+        }) as resp:
+            resp.raise_for_status()
+            total = int(resp.headers.get("content-length", 0))
+            downloaded = 0
+            async for chunk in resp.aiter_bytes(chunk_size=512 * 1024):
+                tmp.write(chunk)
+                downloaded += len(chunk)
+                if on_progress and total > 0:
+                    on_progress(int(downloaded * 100 / total))
     tmp.close()
     return Path(tmp.name)
 
 
 def get_video_duration(video_path: Path) -> float:
-    """用 ffprobe 获取视频时长（秒）"""
-    result = subprocess.run(
-        ["ffprobe", "-v", "error", "-show_entries", "format=duration",
-         "-of", "default=noprint_wrappers=1:nokey=1", str(video_path)],
-        capture_output=True, text=True
-    )
-    return float(result.stdout.strip())
+    """用 OpenCV 获取视频时长（秒）"""
+    cap = cv2.VideoCapture(str(video_path))
+    try:
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+        if fps <= 0:
+            raise ValueError("无法读取视频帧率")
+        return frame_count / fps
+    finally:
+        cap.release()
 
 
 def extract_frames(video_path: Path, max_frames: int = 8) -> list[Path]:
-    """用 ffmpeg 等间隔截取关键帧"""
+    """用 OpenCV 等间隔截取关键帧"""
     output_dir = Path(tempfile.mkdtemp())
-    duration = get_video_duration(video_path)
-    interval = duration / (max_frames + 1)
+    cap = cv2.VideoCapture(str(video_path))
 
-    frame_paths = []
-    for i in range(max_frames):
-        timestamp = interval * (i + 1)
-        out_path = output_dir / f"frame_{i:03d}.jpg"
-        subprocess.run(
-            ["ffmpeg", "-ss", f"{timestamp:.2f}", "-i", str(video_path),
-             "-vframes", "1", "-q:v", "3", "-y", str(out_path)],
-            capture_output=True
-        )
-        if out_path.exists() and out_path.stat().st_size > 0:
-            frame_paths.append(out_path)
+    try:
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        if fps <= 0 or total_frames <= 0:
+            raise ValueError("无法读取视频信息")
 
-    return frame_paths
+        interval = total_frames / (max_frames + 1)
+        frame_paths = []
+
+        for i in range(max_frames):
+            target_frame = int(interval * (i + 1))
+            cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
+            ret, frame = cap.read()
+            if not ret:
+                continue
+            out_path = output_dir / f"frame_{i:03d}.jpg"
+            cv2.imwrite(str(out_path), frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
+            if out_path.exists() and out_path.stat().st_size > 0:
+                frame_paths.append(out_path)
+
+        return frame_paths
+    finally:
+        cap.release()
 
 
 def analyze_frames(frame_paths: list[Path]) -> str:
@@ -100,3 +118,30 @@ async def analyze_video(video_url: str) -> str:
         video_path.unlink(missing_ok=True)
         for fp in frame_paths:
             fp.unlink(missing_ok=True)
+        if frame_paths:
+            frame_paths[0].parent.rmdir()
+
+
+def analyze_frames_stream(frame_paths: list[Path]) -> Generator[str, None, None]:
+    """流式版本：将帧图片发送给视觉模型，逐 chunk yield 文本"""
+    client = OpenAI(api_key=ARK_API_KEY, base_url=ARK_BASE_URL)
+
+    content: list[dict] = [{"type": "text", "text": VISION_PROMPT}]
+    for fp in frame_paths:
+        img_data = base64.b64encode(fp.read_bytes()).decode()
+        content.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:image/jpeg;base64,{img_data}"}
+        })
+
+    stream = client.chat.completions.create(
+        model=ARK_VISION_MODEL_ID,
+        messages=[{"role": "user", "content": content}],
+        temperature=0.3,
+        max_tokens=2000,
+        stream=True,
+    )
+    for chunk in stream:
+        delta = chunk.choices[0].delta.content
+        if delta:
+            yield delta
