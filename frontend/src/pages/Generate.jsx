@@ -145,6 +145,19 @@ export default function Generate() {
                 <div className="mt-2 text-xs text-gray-500">
                   {ex.key_points.map((p, j) => <span key={j} className="mr-2">✓ {p}</span>)}
                 </div>
+                {ex.video_search && (
+                  <a
+                    href={`https://www.douyin.com/search/${encodeURIComponent(ex.video_search)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 mt-2 text-xs text-pink-600 hover:text-pink-700"
+                  >
+                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    教学视频
+                  </a>
+                )}
               </div>
             ))}
           </div>

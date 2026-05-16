@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>FitFlow 游园会海报</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: 297mm 420mm;
+            margin: 0;
+        }
+
+        body {
+            width: 297mm;
+            height: 420mm;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(160deg, #0f0c29 0%, #302b63 40%, #24243e 100%);
+            color: #ffffff;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bg-decoration {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.08;
+        }
+
+        .bg-circle-1 {
+            width: 400px;
+            height: 400px;
+            background: #00d4ff;
+            top: -100px;
+            right: -80px;
+        }
+
+        .bg-circle-2 {
+            width: 300px;
+            height: 300px;
+            background: #ff6b35;
+            bottom: 100px;
+            left: -100px;
+        }
+
+        .bg-circle-3 {
+            width: 200px;
+            height: 200px;
+            background: #7c3aed;
+            top: 40%;
+            right: 10%;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            padding: 40px 45px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff6b35, #ff8c42);
+            color: #fff;
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 18px;
+        }
+
+        .project-name {
+            font-size: 72px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00d4ff, #7c3aed, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+            line-height: 1.1;
+        }
+
+        .tagline {
+            font-size: 26px;
+            color: #e0e0e0;
+            margin-top: 14px;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+
+        /* Divider */
+        .divider {
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+            margin: 25px auto;
+            border-radius: 2px;
+        }
+
+        /* Description */
+        .description {
+            text-align: center;
+            font-size: 18px;
+            color: #b8b8d0;
+            line-height: 1.7;
+            max-width: 85%;
+            margin: 0 auto 30px;
+        }
+
+        /* Features */
+        .features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .feature-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .feature-desc {
+            font-size: 15px;
+            color: #a0a0c0;
+            line-height: 1.5;
+        }
+
+        /* Flow */
+        .flow-section {
+            margin-bottom: 30px;
+        }
+
+        .flow-title {
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 16px;
+            color: #00d4ff;
+        }
+
+        .flow-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .flow-step {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 14px 18px;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .flow-step-icon {
+            font-size: 28px;
+            margin-bottom: 6px;
+        }
+
+        .flow-step-text {
+            font-size: 14px;
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+
+        .flow-arrow {
+            font-size: 24px;
+            color: #00d4ff;
+        }
+
+        /* Tech Stack */
+        .tech-section {
+            margin-bottom: 30px;
+        }
+
+        .tech-tags {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tech-tag {
+            background: rgba(124, 58, 237, 0.15);
+            border: 1px solid rgba(124, 58, 237, 0.4);
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            color: #c4b5fd;
+            font-weight: 500;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-left {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .team-info {
+            font-size: 16px;
+            color: #a0a0c0;
+        }
+
+        .event-info {
+            font-size: 14px;
+            color: #707090;
+        }
+
+        .qr-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .qr-section img {
+            width: 120px;
+            height: 120px;
+            border-radius: 12px;
+        }
+
+        .qr-label {
+            font-size: 13px;
+            color: #a0a0c0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="bg-circle bg-circle-1"></div>
+        <div class="bg-circle bg-circle-2"></div>
+        <div class="bg-circle bg-circle-3"></div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="badge">赛道二 | 抖音精选-内容重构</div>
+            <div class="project-name">FitFlow</div>
+            <div class="tagline">让健身视频成为你的私人教练</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Description -->
+        <div class="description">
+            基于 AI 深度理解抖音健身视频内容，自动提取动作要领，<br>
+            为你生成个性化、可执行的训练计划，让优质内容真正"用起来"
+        </div>
+
+        <!-- Features -->
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🎬</div>
+                <div class="feature-title">视频内容解析</div>
+                <div class="feature-desc">AI 自动提取视频中的动作名称、组数、时长等关键训练信息</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🏋️</div>
+                <div class="feature-title">智能计划生成</div>
+                <div class="feature-desc">根据你的体能水平和目标，生成个性化的训练方案</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <div class="feature-title">AI 教练对话</div>
+                <div class="feature-desc">随时追问动作细节、调整强度，像真人教练一样互动</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <div class="feature-title">训练执行看板</div>
+                <div class="feature-desc">计时器、进度追踪、完成打卡，形成完整训练闭环</div>
+            </div>
+        </div>
+
+        <!-- Flow -->
+        <div class="flow-section">
+            <div class="flow-title">使用流程</div>
+            <div class="flow-steps">
+                <div class="flow-step">
+                    <div class="flow-step-icon">📱</div>
+                    <div class="flow-step-text">选择视频</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-step-icon">🤖</div>
+                    <div class="flow-step-text">AI 生成计划</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-step-icon">⏱️</div>
+                    <div class="flow-step-text">跟练执行</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-step-icon">🎉</div>
+                    <div class="flow-step-text">完成打卡</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tech -->
+        <div class="tech-section">
+            <div class="tech-tags">
+                <div class="tech-tag">React + Vite</div>
+                <div class="tech-tag">FastAPI</div>
+                <div class="tech-tag">豆包 AI</div>
+                <div class="tech-tag">Whisper 转录</div>
+                <div class="tech-tag">Tailwind CSS</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-left">
+                <div class="team-info">抖音黑客松联赛 · 武汉站 2026</div>
+                <div class="event-info">2026.05.16 - 05.17 | 洪山人工智能大厦</div>
+            </div>
+            <div class="qr-section">
+                <img src="./qrcode.png" alt="扫码体验 FitFlow Demo">
+                <div class="qr-label">扫码体验 Demo</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

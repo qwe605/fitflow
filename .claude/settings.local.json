@@ -9,7 +9,10 @@
       "PowerShell(ffmpeg *)",
       "Bash(git add *)",
       "Bash(git commit -m 'perf: 为训练计划生成添加 max_tokens=2000 限制 *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "PowerShell(Start-Process \"C:\\\\Users\\\\mj\\\\Desktop\\\\heckson\\\\poster.html\")",
+      "Bash(npx vite *)",
+      "Bash(Select-Object -Last 20)"
     ]
   }
 }

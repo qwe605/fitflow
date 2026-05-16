@@ -54,6 +54,19 @@ export default function ExerciseCard({ exercise, index, isCompleted, onToggle, o
           <div className="text-xs text-gray-500 mt-2">
             呼吸：{exercise.breathing}
           </div>
+          {exercise.video_search && (
+            <a
+              href={`https://www.douyin.com/search/${encodeURIComponent(exercise.video_search)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 mt-3 px-3 py-1.5 bg-pink-50 text-pink-600 rounded-lg text-xs font-medium hover:bg-pink-100 transition"
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              观看教学视频
+            </a>
+          )}
         </div>
       )}
     </div>
